@@ -224,8 +224,6 @@ Content-Type: application/json
 **Validation Rules:**
 - `topic`: Must be one of the supported topics
 - Authentication token must be valid
-- `userId`: Required string
-- `topic`: Must be one of the supported topics
 
 **Response:** `200 OK`
 
