@@ -44,8 +44,57 @@ Notes
 - Dockerfiles are lockfile-aware: they run `npm ci` when a `package-lock.json` is present, otherwise they fall back to `npm install`.
 - For production readiness: pin Node versions, run as non-root, add HEALTHCHECKs, and use a registry + CI pipeline.
 - For developer convenience: the override file mounts source and uses named volumes for `node_modules` to avoid clobbering installed modules.
+- All services now include HEALTHCHECK instructions for better container monitoring
+
+Troubleshooting Docker Issues
+
+If you encounter "docker: command not found" errors:
+
+1. **Install Docker Desktop**:
+   - macOS: https://docs.docker.com/desktop/install/mac-install/
+   - Windows: https://docs.docker.com/desktop/install/windows-install/
+   - Linux: https://docs.docker.com/engine/install/
+
+2. **Verify Docker is in your PATH**:
+   ```bash
+   # Check if Docker is installed
+   docker --version
+   
+   # Check if Docker daemon is running
+   docker info
+   ```
+
+3. **Docker Desktop must be running**:
+   - Open Docker Desktop application
+   - Wait for it to fully start (whale icon should be steady)
+   - Try your docker commands again
+
+4. **Using docker compose (v2) instead of docker-compose (v1)**:
+   ```bash
+   # Modern syntax (Docker Compose v2)
+   docker compose up
+   
+   # Legacy syntax (Docker Compose v1)
+   docker-compose up
+   ```
+
+5. **Validate Docker setup**:
+   ```bash
+   # Run the validation script
+   ./validate-docker.sh
+   ```
+
+CI/CD Integration
+
+This repository includes GitHub Actions workflows that:
+- Build all Docker images on push to main/develop branches
+- Test that images can be built successfully
+- Validate docker-compose.yml configuration
+- Cache Docker layers for faster builds
+
+The workflow file is located at `.github/workflows/docker-build.yml`
 
 If you want, I can:
-- Add GitHub Actions workflow that builds images and optionally pushes them to a registry.
-- Add HEALTHCHECK entries and pin Node versions in Dockerfiles.
+- Add GitHub Actions workflow that builds images and optionally pushes them to a registry. ✅ DONE
+- Add HEALTHCHECK entries and pin Node versions in Dockerfiles. ✅ DONE
 - Run and verify a smoke test locally (requires Docker on your machine and a filled `.env`).
