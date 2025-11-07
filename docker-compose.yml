@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  user:
+    build: ./user_service
+    ports:
+      - "4001:4001"
+    environment:
+      - PORT=4001
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+
+  question:
+    build: ./question_service
+    ports:
+      - "4003:4003"
+    environment:
+      - PORT=4003
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+
+  matching:
+    build: ./matching_service
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - rabbitmq
+      - redis
+
+  collaboration:
+    build: ./collaboration_service
+    ports:
+      - "4010:4010"
+    environment:
+      - PORT=4010
+      - REDIS_URL=redis://redis:6379
+      - QUESTION_SERVICE_URL=http://question:4003
+      - USER_SERVICE_URL=http://user:4001
+      - COLLAB_WS_BASE_URL=ws://localhost:4010
+    depends_on:
+      - redis
+      - question
+      - user
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:4001}
+    depends_on:
+      - user
+      - collaboration
+      - matching
+      - question
+
+volumes:
+  # named volumes for dev mounts (declared empty)
+  collaboration_node_modules: {}
+  user_node_modules: {}
+  matching_node_modules: {}
+  question_node_modules: {}
+  frontend_node_modules: {}
