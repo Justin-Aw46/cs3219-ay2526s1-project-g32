@@ -23,5 +23,5 @@ USER appuser
 
 EXPOSE 3002
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3002/api/v1/matching/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
+  CMD node -e "const http = require('http'); const req = http.get('http://localhost:3002/api/v1/matching/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)); req.on('error', () => process.exit(1));"
 CMD ["node", "dist/index.js"]
